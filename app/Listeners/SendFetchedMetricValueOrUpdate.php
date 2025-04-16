@@ -25,6 +25,9 @@ readonly class SendFetchedMetricValueOrUpdate
         $ctx = $this->contextManager->getContext($event->id);
         if (null !== $ctx && $ctx->payload instanceof TelegramMessageData) {
             if (null !== $event->value) {
+                /**
+                 * Если удалось достать свежее значение метрики из InfluxDB, отправляем соответствующее сообщение
+                 */
                 $this->bus->dispatch(new SendMessage(
                     $ctx->payload->chatId,
                     sprintf(
@@ -38,6 +41,9 @@ readonly class SendFetchedMetricValueOrUpdate
                     ),
                 ));
             } else {
+                /**
+                 * Иначе — забираем значение из PlantRPC
+                 */
                 $method = match ($event->metric) {
                     Metric::AMBIENT_TEMPERATURE => RPCMethod::GET_TEMP,
                     Metric::AMBIENT_HUMIDITY => RPCMethod::GET_HUM,

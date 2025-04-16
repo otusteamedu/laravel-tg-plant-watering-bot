@@ -6,6 +6,9 @@ use App\Services\Metrics\Enum\Metric;
 use App\Services\Metrics\Jobs\PushMetric;
 use Illuminate\Contracts\Bus\Dispatcher;
 
+/**
+ * Middleware для замера времени выполнения фоновых задач (Jobs)
+ */
 readonly class Measure
 {
     public function __construct(

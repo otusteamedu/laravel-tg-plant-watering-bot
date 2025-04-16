@@ -13,6 +13,10 @@ abstract class AbstractCommand extends Command
 {
     protected \App\Services\Telegram\Enum\Command $command;
 
+    /**
+     * При попытке чтения свойства $name возвращаем значение из $command
+     * см. "php property hooks"
+     */
     protected string $name {
         get {
             return $this->command->value;
@@ -26,16 +30,25 @@ abstract class AbstractCommand extends Command
     ) {
     }
 
+    /**
+     * Базовая обработка любой команды бота
+     */
     public function handle(): void
     {
         $startedAt = microtime(true);
 
         try {
+            /**
+             * Проверяем ID пользователя — чужих игнорируем
+             */
             $this->auth->handle($this->getUpdate());
         } catch (\Throwable) {
             return;
         }
 
+        /**
+         * Обрабатываем команду и порождаем событие об успешном завершении обработки
+         */
         $this->process();
         $this->events->dispatch(new CommandProcessed($this->command, microtime(true) - $startedAt));
     }

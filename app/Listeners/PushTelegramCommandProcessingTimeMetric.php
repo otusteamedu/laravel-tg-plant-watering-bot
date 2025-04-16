@@ -16,6 +16,9 @@ readonly class PushTelegramCommandProcessingTimeMetric
 
     public function __invoke(CommandProcessed $event): void
     {
+        /**
+         * Сохраняем время обработки команды из Telegram в InfluxDB посредством фоновой задачи PushMetric
+         */
         $this->bus->dispatch(new PushMetric(
             Metric::BOT_COMMAND_PROCESSING_TIME,
             $event->elapsedTime,

@@ -36,6 +36,9 @@ readonly class PlantRPC
     ) {
     }
 
+    /**
+     * Подключаемся к MQTT и слушаем топик $topicOut, обрабатывая все входящие сообщения через handleRpcResponse
+     */
     public function listenForResponses(): void
     {
         $client = $this->connectionManager->connection();
@@ -53,54 +56,92 @@ readonly class PlantRPC
         $client->loop();
     }
 
+    /**
+     * Прекращаем слушать топик и обрабатывать сообщения
+     */
     public function stopListeningForResponses(): void
     {
         $this->connectionManager->connection()->interrupt();
         $this->logger->info('Done');
     }
 
+    /**
+     * Вызываем RPC
+     */
     public function call(RPCRequest $request): void
     {
+        /**
+         * Подключаемся к MQTT
+         */
         $client = $this->connectionManager->connection();
 
+        /**
+         * Кладём JSON с запросом в топик $topicIn
+         */
         $client->publish(
             $this->topicIn,
             json_encode($request),
             2
         );
+        /**
+         * Ждём, пока сообщение не будет доставлено
+         */
         $client->loop(true, true);
 
+        /**
+         * Сохраняем контекст запроса (НЕ имеет отношения к контексту команды и сервису CommandBus!)
+         */
         $this->storeContext($request);
 
+        /**
+         * Создаём отложенную задачу для проверки зависшего запроса
+         */
         $this->bus->dispatch(
             new CheckPendingContext($request->id)
                 ->delay(self::RPC_CALL_TIMEOUT)
         );
     }
 
+    /**
+     * Проверяем зависший запрос
+     */
     public function checkPendingContext(string $id): void
     {
         $ctx = $this->getContext($id);
         if (null !== $ctx) {
             if ($ctx->attempts >= $this->maxAttempts) {
+                /**
+                 * Если попыток было больше положенного, порождаем событие об истекшем контексте, а сам контекст удаляем
+                 */
                 $this->events->dispatch(new CallExpired($id, $ctx->request->method));
                 $this->clearContext($id);
             } else {
+                /**
+                 * Иначе пробуем отправить запрос повторно
+                 */
                 $this->call($ctx->request);
             }
         }
     }
 
+    /**
+     * Обрабатываем ответ от PlantRPC
+     */
     private function handleRpcResponse(string $rawResponse): void
     {
         $decoded = json_decode($rawResponse, true);
         $id = $decoded['id'];
 
         $this->logger->info("Got RPC response for $id");
-
+        /**
+         * Достаём из кеша контекст по $id
+         */
         $ctx = $this->getContext($id);
 
         if (null !== $ctx) {
+            /**
+             * Формируем DTO в зависимости от метода запроса и отправляем событие об успешном получении ответа
+             */
             $dto = match ($ctx->request->method) {
                 RPCMethod::GET_TEMP => GetTempResponse::fromArray($decoded),
                 RPCMethod::GET_HUM => GetHumResponse::fromArray($decoded),

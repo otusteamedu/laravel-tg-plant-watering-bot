@@ -26,6 +26,7 @@ class SubscribeToRpcMessagesCommand extends Command
      */
     public function handle(PlantRPC $plantRPC): int
     {
+        // останавливаем обработку ответов RPC при получении сигнала от ОС, например если нажали Ctrl+C
         $this->trap([SIGTERM, SIGINT], static fn() => $plantRPC->stopListeningForResponses());
 
         try {

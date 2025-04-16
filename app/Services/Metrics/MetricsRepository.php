@@ -17,6 +17,9 @@ readonly class MetricsRepository
     ) {
     }
 
+    /**
+     * Читаем значение метрики по наименованию в пределах одной минуты
+     */
     public function readLastNumericValue(Metric $metric): int|float|null
     {
         $data = $this->client
@@ -48,6 +51,9 @@ readonly class MetricsRepository
         return null;
     }
 
+    /**
+     * Сохраняем значение метрики
+     */
     public function writeNumericValue(Metric $metric, int|float $value, array $tags = [], ?float $time = null): void
     {
         $point = Point::measurement($metric->value);

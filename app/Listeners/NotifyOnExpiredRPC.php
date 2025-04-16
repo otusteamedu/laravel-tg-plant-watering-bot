@@ -22,6 +22,9 @@ readonly class NotifyOnExpiredRPC
         $ctx = $this->manager->getContext($event->id);
         if (null !== $ctx) {
             if ($ctx->payload instanceof TelegramMessageData) {
+                /**
+                 * Ставим луну на сообщение с командой, выполнение которой не свершилось
+                 */
                 $this->bus->dispatch(new SendReaction(
                     $ctx->payload->chatId,
                     $ctx->payload->messageId,

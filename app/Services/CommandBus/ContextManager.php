@@ -7,6 +7,9 @@ use App\Services\CommandBus\Events\ContextCompleted;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 
+/**
+ * Здесь вся обработка контекста команды
+ */
 readonly class ContextManager
 {
     private const string CONTEXT_CACHE_KEY = __CLASS__ . 'cmd_ctx_%s';

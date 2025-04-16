@@ -25,6 +25,9 @@ readonly class NotifyOnCompletedRPC
         $ctx = $this->manager->getContext($event->response->id);
         if (null !== $ctx) {
             if ($ctx->payload instanceof TelegramMessageData) {
+                /**
+                 * Ставим сообщению палец вверх или вниз в зависимости от того, каков результат выполнения запроса к PlantRPC
+                 */
                 $this->bus->dispatch(new SendReaction(
                     $ctx->payload->chatId,
                     $ctx->payload->messageId,
@@ -32,6 +35,9 @@ readonly class NotifyOnCompletedRPC
                 ));
 
                 if ($event->response instanceof GetTempResponse) {
+                    /**
+                     * Отправляем сообщение с температурой
+                     */
                     $this->replyWith(
                         $ctx->payload,
                         $event->response->ok
@@ -39,6 +45,9 @@ readonly class NotifyOnCompletedRPC
                             : ($event->response->msg ?? 'Something went wrong :('),
                     );
                 } elseif ($event->response instanceof GetHumResponse) {
+                    /**
+                     * Отправляем сообщение с влажностью
+                     */
                     $this->replyWith(
                         $ctx->payload,
                         $event->response->ok

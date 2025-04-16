@@ -17,6 +17,9 @@ readonly class Bot
         $this->api->commandsHandler($webhook);
     }
 
+    /**
+     * Ставим реакцию на сообщение
+     */
     public function sendReaction(int $chatId, int $messageId, MessageReactionEmoji $emoji): void
     {
         $this->api->setMessageReaction([
@@ -29,6 +32,9 @@ readonly class Bot
         ]);
     }
 
+    /**
+     * Отправляем сообщение в чат с пользователем
+     */
     public function sendMessage(int $chatId, string $text): void
     {
         $this->api->sendMessage([

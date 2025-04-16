@@ -18,6 +18,9 @@ readonly class PushAmbienceMetric
 
     public function __invoke(ResponseReceived $event): void
     {
+        /**
+         * Сохраняем температуру или влажность в InfluxDB посредством фоновой задачи PushMetric
+         */
         if ($event->response instanceof GetTempResponse) {
             $this->bus->dispatch(new PushMetric(
                 Metric::AMBIENT_TEMPERATURE,

@@ -16,6 +16,9 @@ readonly class PushRPCResponseTimeMetric
 
     public function __invoke(ResponseReceived $event): void
     {
+        /**
+         * Сохраняем время обработки вызова PlantRPC в InfluxDB посредством фоновой задачи PushMetric
+         */
         $this->bus->dispatch(new PushMetric(
             Metric::RPC_RESPONSE_TIME,
             $event->elapsedTime,

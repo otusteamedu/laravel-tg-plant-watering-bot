@@ -4,6 +4,9 @@ namespace App\Jobs\Traits;
 
 use App\Jobs\Middleware\Measure;
 
+/**
+ * Трейт для задач (Job), время выполнения которых мы хотим видеть на графике
+ */
 trait Measurable
 {
     /**
